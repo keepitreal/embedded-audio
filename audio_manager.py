@@ -10,6 +10,12 @@ class AudioManager:
         self.recording = False
         self.device = "default"
 
+    def list_devices(self):
+        """List available audio devices"""
+        print("Available audio devices:")
+        for device in alsaaudio.PCM().list_devices():
+            print(device)
+
     def start_recording(self):
         """Start recording audio from the default device"""
         timestamp = time.time()
@@ -26,7 +32,7 @@ class AudioManager:
         file.setframerate(44100)
 
         # Open the device in non-blocking capture mode
-        inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, alsaaudio.PCM_NONBLOCK, channels=2, rate=44100, format=alsaaudio.PCM_FORMAT_S16_LE, periodsize=160, device=device)
+        inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, alsaaudio.PCM_NONBLOCK, channels=2, rate=44100, format=alsaaudio.PCM_FORMAT_S16_LE, periodsize=160, device=self.device)
         inp.setperiodsize(160)
 
         while self.recording:
