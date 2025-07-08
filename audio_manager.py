@@ -13,7 +13,7 @@ class AudioManager:
     def list_devices(self):
         """List available audio devices"""
         print("Available audio devices:")
-        for device in alsaaudio.PCM().list_devices():
+        for device in alsaaudio.pcms(alsaaudio.PCM_CAPTURE):
             print(device)
 
     def start_recording(self):
