@@ -34,7 +34,7 @@ class AudioManager:
         # Open the device in non-blocking capture mode
         inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, alsaaudio.PCM_NONBLOCK,
                 channels=1, rate=44100, format=alsaaudio.PCM_FORMAT_S16_LE,
-                periodsize=160, device='hw:0,0')
+                periodsize=160, device='wm8960-soundcard')
         inp.setperiodsize(160)
 
         while self.recording:
