@@ -1,4 +1,3 @@
-import time
 import wave
 import alsaaudio
 
@@ -10,8 +9,6 @@ class PlaybackManager:
 
     def play_file(self, filepath):
         """Play back audio from a wav file"""
-        print(f"Playing back file: {filepath}")
-        
         # Open the wave file for reading
         with wave.open(filepath, 'rb') as file:
             # Get file parameters
@@ -19,8 +16,6 @@ class PlaybackManager:
             sample_width = file.getsampwidth()
             framerate = file.getframerate()
             frames = file.getnframes()
-            
-            print(f"File info: {channels} channels, {sample_width} bytes/sample, {framerate} Hz, {frames} frames")
             
             # Open the device for playback in blocking mode
             out = alsaaudio.PCM(alsaaudio.PCM_PLAYBACK, alsaaudio.PCM_NORMAL,
@@ -38,4 +33,3 @@ class PlaybackManager:
             
             # Close the device (automatically waits for completion in blocking mode)
             out.close()
-            print("Playback completed")

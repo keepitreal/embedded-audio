@@ -31,7 +31,6 @@ class RecordingManager:
         filepath = util.create_file("recordings", filename)
 
         self.recording = True
-        print("Recording started on device:", self.device, "saving to:", filepath)
 
         # Configure the wave file
         file = wave.open(filepath, 'wb')
@@ -54,7 +53,6 @@ class RecordingManager:
         # Clean up resources
         file.close()
         inp.close()  # Explicitly close the PCM device
-        print("Recording device closed")
         return filepath
 
     def stop_recording(self):
