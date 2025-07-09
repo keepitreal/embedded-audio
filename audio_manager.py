@@ -40,9 +40,38 @@ class AudioManager:
         file.setframerate(44100)
 
         # Open the device in non-blocking capture mode
-        inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, alsaaudio.PCM_NONBLOCK, channels=2, rate=44100, format=alsaaudio.PCM_FORMAT_S16_LE, periodsize=160, device='plughw:CARD=wm8960soundcard,DEV=0')
-
-        inp.setperiodsize(160)
+        devices_to_try = [
+            ('default', None),
+            ('hw:CARD=wm8960soundcard,DEV=0', None),
+            ('sysdefault:CARD=wm8960soundcard', None),
+            (None, 0)  # cardindex=0 creates 'hw:0'
+        ]
+        
+        inp = None
+        for device_name, card_idx in devices_to_try:
+            try:
+                print(f"Trying device: {device_name if device_name else f'cardindex={card_idx}'}")
+                
+                if card_idx is not None:
+                    inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, alsaaudio.PCM_NONBLOCK, 
+                                       channels=2, rate=44100, format=alsaaudio.PCM_FORMAT_S16_LE, 
+                                       periodsize=160, cardindex=card_idx)
+                else:
+                    inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, alsaaudio.PCM_NONBLOCK, 
+                                       channels=2, rate=44100, format=alsaaudio.PCM_FORMAT_S16_LE, 
+                                       periodsize=160, device=device_name)
+                
+                print(f"Success! Using device: {device_name if device_name else f'cardindex={card_idx}'}")
+                print("Device info:", inp.info())
+                break
+                
+            except alsaaudio.ALSAAudioError as e:
+                print(f"Failed with {device_name if device_name else f'cardindex={card_idx}'}: {e}")
+                continue
+        
+        if inp is None:
+            print("All devices failed!")
+            return
 
         while self.recording:
             # Read data from the device
