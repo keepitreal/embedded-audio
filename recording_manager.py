@@ -3,7 +3,7 @@ import util
 import wave
 import alsaaudio
 
-class AudioManager:
+class RecordingManager:
     """Audio recording and playback manager using ALSA"""
 
     def __init__(self):
