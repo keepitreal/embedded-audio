@@ -51,7 +51,10 @@ class RecordingManager:
                 file.writeframes(data)
             time.sleep(0.001)
 
+        # Clean up resources
         file.close()
+        inp.close()  # Explicitly close the PCM device
+        print("Recording device closed")
         return filepath
 
     def stop_recording(self):
