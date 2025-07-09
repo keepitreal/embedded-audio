@@ -16,6 +16,14 @@ class AudioManager:
         for device in alsaaudio.pcms(alsaaudio.PCM_CAPTURE):
             print(device)
 
+    def list_cards(self):
+        """List available audio cards with their indices"""
+        print("Available audio cards:")
+        cards = alsaaudio.cards()
+        for i, card in enumerate(cards):
+            print(f"Card {i}: {card}")
+        return cards
+
     def start_recording(self):
         """Start recording audio from the default device"""
         timestamp = time.time()
@@ -32,7 +40,7 @@ class AudioManager:
         file.setframerate(44100)
 
         # Open the device in non-blocking capture mode
-        inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, alsaaudio.PCM_NONBLOCK, channels=2, rate=44100, format=alsaaudio.PCM_FORMAT_S16_LE, periodsize=160, device='default')
+        inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, alsaaudio.PCM_NONBLOCK, channels=2, rate=44100, format=alsaaudio.PCM_FORMAT_S16_LE, periodsize=160, device='plughw:CARD=wm8960soundcard,DEV=0')
 
         inp.setperiodsize(160)
 
