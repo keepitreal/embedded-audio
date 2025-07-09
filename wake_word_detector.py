@@ -56,11 +56,11 @@ class WakeWordDetector:
     def _listen_loop(self):
         """Main listening loop - runs continuously"""
         try:
-            # Open audio device for capture (match recording_manager settings)
+            # Open audio device for capture (exactly match recording_manager settings)
             audio = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, alsaaudio.PCM_NONBLOCK,
-                                 channels=2, rate=self.sample_rate, 
+                                 channels=2, rate=16000, 
                                  format=alsaaudio.PCM_FORMAT_S32_LE,
-                                 periodsize=1024, device=self.device)
+                                 periodsize=160, device=self.device)
             
             print("Wake word detection active...")
             
