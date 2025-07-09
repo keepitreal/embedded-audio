@@ -56,10 +56,10 @@ class WakeWordDetector:
     def _listen_loop(self):
         """Main listening loop - runs continuously"""
         try:
-            # Open audio device for capture
+            # Open audio device for capture (match recording_manager settings)
             audio = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, alsaaudio.PCM_NONBLOCK,
-                                 channels=1, rate=self.sample_rate, 
-                                 format=alsaaudio.PCM_FORMAT_S16_LE,
+                                 channels=2, rate=self.sample_rate, 
+                                 format=alsaaudio.PCM_FORMAT_S32_LE,
                                  periodsize=1024, device=self.device)
             
             print("Wake word detection active...")
@@ -69,8 +69,13 @@ class WakeWordDetector:
                 length, data = audio.read()
                 
                 if length > 0 and self.rec:
+                    # Convert stereo to mono for Vosk (extract left channel from 32-bit stereo)
+                    mono_data = bytearray()
+                    for i in range(0, len(data), 8):  # 8 bytes per stereo sample (2 x 32-bit)
+                        mono_data.extend(data[i:i+4])  # Take left channel (first 4 bytes)
+                    
                     # Process audio through Vosk
-                    if self.rec.AcceptWaveform(data):
+                    if self.rec.AcceptWaveform(bytes(mono_data)):
                         # Get recognition result
                         result = json.loads(self.rec.Result())
                         text = result.get('text', '').lower()
