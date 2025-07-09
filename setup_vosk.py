@@ -52,10 +52,9 @@ def extract_model(archive_path, extract_to="vosk-model"):
 def setup_vosk_model():
     """Download and setup a small Vosk model for wake word detection"""
     
-    # Medium English model (~1.8GB) - more accurate for wake word detection
-    # Fine for 32GB SD card
-    model_url = "https://alphacephei.com/vosk/models/vosk-model-en-us-0.22.zip"
-    model_filename = "vosk-model-en-us-0.22.zip"
+    # Small English model (~50MB) - optimized for Raspberry Pi memory
+    model_url = "https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip"
+    model_filename = "vosk-model-small-en-us-0.15.zip"
     
     print("Vosk Model Setup for Wake Word Detection")
     print("=" * 50)
