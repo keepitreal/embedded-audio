@@ -4,11 +4,11 @@ import wave
 import alsaaudio
 
 class RecordingManager:
-    """Audio recording and playback manager using ALSA"""
+    """Audio recording manager using ALSA"""
 
     def __init__(self):
         self.recording = False
-        self.device = "default"
+        self.device = "hw:0,0"
 
     def list_devices(self):
         """List available audio devices"""
@@ -42,7 +42,7 @@ class RecordingManager:
         # Open the device in non-blocking capture mode
         inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, alsaaudio.PCM_NONBLOCK, 
                            channels=2, rate=16000, format=alsaaudio.PCM_FORMAT_S32_LE, 
-                           periodsize=160, device='hw:0,0')
+                           periodsize=160, device=self.device)
 
         while self.recording:
             # Read data from the device
@@ -52,6 +52,7 @@ class RecordingManager:
             time.sleep(0.001)
 
         file.close()
+        return filepath
 
     def stop_recording(self):
         """Stop recording audio"""
