@@ -22,8 +22,8 @@ class PlaybackManager:
             
             print(f"File info: {channels} channels, {sample_width} bytes/sample, {framerate} Hz, {frames} frames")
             
-            # Open the device for playback
-            out = alsaaudio.PCM(alsaaudio.PCM_PLAYBACK, alsaaudio.PCM_NONBLOCK,
+            # Open the device for playback in blocking mode
+            out = alsaaudio.PCM(alsaaudio.PCM_PLAYBACK, alsaaudio.PCM_NORMAL,
                                channels=channels, rate=framerate, format=alsaaudio.PCM_FORMAT_S32_LE,
                                periodsize=160, device=self.device)
             
@@ -33,10 +33,9 @@ class PlaybackManager:
                 if not data:
                     break
                 
-                # Write data to the device
+                # Write data to the device (blocking mode handles timing automatically)
                 out.write(data)
-                time.sleep(0.001)
             
-            # Wait for playback to complete
-            out.drain()
+            # Close the device (automatically waits for completion in blocking mode)
+            out.close()
             print("Playback completed")
