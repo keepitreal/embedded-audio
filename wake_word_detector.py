@@ -68,11 +68,21 @@ class WakeWordDetector:
                 # Read audio data
                 length, data = audio.read()
                 
+                # Debug logging
+                if length > 0:
+                    print(f"📊 Audio data: length={length}, data_size={len(data)}")
+                elif length == 0:
+                    print("⚠️  No audio data available")
+                else:
+                    print(f"❌ Audio read error: {length}")
+                
                 if length > 0 and self.rec:
                     # Convert stereo to mono for Vosk (extract left channel from 32-bit stereo)
                     mono_data = bytearray()
                     for i in range(0, len(data), 8):  # 8 bytes per stereo sample (2 x 32-bit)
                         mono_data.extend(data[i:i+4])  # Take left channel (first 4 bytes)
+                    
+                    print(f"🔄 Mono data size: {len(mono_data)}")
                     
                     # Process audio through Vosk
                     if self.rec.AcceptWaveform(bytes(mono_data)):
