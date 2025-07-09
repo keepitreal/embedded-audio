@@ -9,7 +9,7 @@ def main():
 
     threading.Timer(5, rm.stop_recording).start()
     filepath = rm.start_recording()
-    time.sleep(0.5)
+    time.sleep(2)
     pm.play_file(filepath)
 
 if __name__ == "__main__":
