@@ -68,24 +68,23 @@ class WakeWordDetector:
                 # Read audio data
                 length, data = audio.read()
                 
-                # Debug logging
-                if length > 0:
-                    print(f"📊 Audio data: length={length}, data_size={len(data)}")
-                elif length == 0:
-                    print("⚠️  No audio data available")
-                else:
-                    print(f"❌ Audio read error: {length}")
-                
                 if length > 0 and self.rec:
-                    # Convert stereo to mono for Vosk (extract left channel from 32-bit stereo)
-                    mono_data = bytearray()
-                    for i in range(0, len(data), 8):  # 8 bytes per stereo sample (2 x 32-bit)
-                        mono_data.extend(data[i:i+4])  # Take left channel (first 4 bytes)
+                    # Convert 32-bit stereo to 16-bit mono for Vosk
+                    import struct
+                    mono_16bit = bytearray()
                     
-                    print(f"🔄 Mono data size: {len(mono_data)}")
+                    # Process 32-bit stereo data
+                    for i in range(0, len(data), 8):  # 8 bytes per stereo sample (2 x 32-bit)
+                        if i + 4 <= len(data):
+                            # Extract left channel (first 4 bytes) as 32-bit signed int
+                            left_channel = struct.unpack('<i', data[i:i+4])[0]
+                            # Convert from 32-bit to 16-bit by shifting
+                            left_16bit = (left_channel >> 16) & 0xFFFF
+                            # Pack as 16-bit signed integer
+                            mono_16bit.extend(struct.pack('<h', left_16bit - 32768 if left_16bit > 32767 else left_16bit))
                     
                     # Process audio through Vosk
-                    if self.rec.AcceptWaveform(bytes(mono_data)):
+                    if self.rec.AcceptWaveform(bytes(mono_16bit)):
                         # Get recognition result
                         result = json.loads(self.rec.Result())
                         text = result.get('text', '').lower()
