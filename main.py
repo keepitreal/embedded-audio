@@ -1,16 +1,8 @@
-import recording_manager
-import playback_manager
-import threading
-import time
+import voice_assistant_controller
 
 def main():
-    rm = recording_manager.RecordingManager()
-    pm = playback_manager.PlaybackManager()
-
-    threading.Timer(5, rm.stop_recording).start()
-    filepath = rm.start_recording()
-    time.sleep(2)
-    pm.play_file(filepath)
+    controller = voice_assistant_controller.VoiceAssistantController()
+    controller.listen()
 
 if __name__ == "__main__":
     main()
