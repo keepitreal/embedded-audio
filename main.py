@@ -1,6 +1,7 @@
 import recording_manager
 import playback_manager
 import threading
+import time
 
 def main():
     rm = recording_manager.RecordingManager()
@@ -8,7 +9,7 @@ def main():
 
     threading.Timer(5, rm.stop_recording).start()
     filepath = rm.start_recording()
-    
+    time.sleep(0.5)
     pm.play_file(filepath)
 
 if __name__ == "__main__":
