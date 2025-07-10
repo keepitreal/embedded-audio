@@ -39,14 +39,12 @@ class RecordingManager:
                            periodsize=160, device=self.device)
         
         # Check what rate the device actually set
-        actual_rate = inp.setrate(44100)
-        print(f"Requested 44100Hz, device set to: {actual_rate}Hz")
 
         # Configure the wave file with the actual rate
         file = wave.open(filepath, 'wb')
         file.setnchannels(2)  # Stereo recording
-        file.setsampwidth(2) # PCM_FORMAT_S16_LE (16-bit = 2 bytes)
-        file.setframerate(actual_rate)  # Use actual rate, not requested rate
+        file.setsampwidth(4) # PCM_FORMAT_S16_LE (16-bit = 2 bytes)
+        file.setframerate(16000)  # Use actual rate, not requested rate
 
         while self.recording:
             # Read data from the device
