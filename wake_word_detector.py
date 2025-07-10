@@ -3,6 +3,7 @@ import time
 import threading
 import alsaaudio
 import vosk
+import numpy as np
 
 class WakeWordDetector:
     """Wake word detection service using Vosk model"""
@@ -59,7 +60,7 @@ class WakeWordDetector:
             # Open audio device for capture (exactly match recording_manager settings)
             audio = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, alsaaudio.PCM_NONBLOCK,
                                  channels=2, rate=16000, 
-                                 format=alsaaudio.PCM_FORMAT_S32_LE,
+                                 format=alsaaudio.PCM_FORMAT_S16_LE,
                                  periodsize=160, device=self.device)
             
             print("Wake word detection active...")
@@ -69,22 +70,11 @@ class WakeWordDetector:
                 length, data = audio.read()
                 
                 if length > 0 and self.rec:
-                    # Convert 32-bit stereo to 16-bit mono for Vosk
-                    import struct
-                    mono_16bit = bytearray()
-                    
-                    # Process 32-bit stereo data
-                    for i in range(0, len(data), 8):  # 8 bytes per stereo sample (2 x 32-bit)
-                        if i + 4 <= len(data):
-                            # Extract left channel (first 4 bytes) as 32-bit signed int
-                            left_channel = struct.unpack('<i', data[i:i+4])[0]
-                            # Convert from 32-bit to 16-bit by shifting
-                            left_16bit = (left_channel >> 16) & 0xFFFF
-                            # Pack as 16-bit signed integer
-                            mono_16bit.extend(struct.pack('<h', left_16bit - 32768 if left_16bit > 32767 else left_16bit))
+                    # Convert stereo to mono
+                    mono_data = self._stereo_to_mono(data)
                     
                     # Process audio through Vosk
-                    if self.rec.AcceptWaveform(bytes(mono_16bit)):
+                    if self.rec.AcceptWaveform(mono_data):
                         # Get recognition result
                         result = json.loads(self.rec.Result())
                         text = result.get('text', '').lower()
@@ -107,6 +97,13 @@ class WakeWordDetector:
                 audio.close()
             except:
                 pass
+    
+    def _stereo_to_mono(self, stereo_data):
+        """Convert stereo 16-bit PCM audio to mono by taking left channel only"""
+        # Convert stereo bytes to numpy array of int16
+        stereo = np.frombuffer(stereo_data, dtype='<i2')  # little-endian int16
+        mono = stereo[::2]  # take left channel only
+        return mono.tobytes()
     
     def _contains_wake_word(self, text):
         """Check if text contains any of the wake words"""

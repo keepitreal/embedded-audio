@@ -2,6 +2,7 @@ import time
 import util
 import wave
 import alsaaudio
+import threading
 
 class RecordingManager:
     """Audio recording manager using ALSA"""
@@ -40,7 +41,7 @@ class RecordingManager:
 
         # Open the device in non-blocking capture mode
         inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, alsaaudio.PCM_NONBLOCK, 
-                           channels=2, rate=16000, format=alsaaudio.PCM_FORMAT_S32_LE, 
+                           channels=2, rate=16000, format=alsaaudio.PCM_FORMAT_S16_LE, 
                            periodsize=160, device=self.device)
 
         while self.recording:
@@ -59,3 +60,11 @@ class RecordingManager:
         """Stop recording audio"""
         self.recording = False
         print("Recording stopped")
+
+"""
+For testing recording:
+"""
+if __name__ == "__main__":
+    rm = RecordingManager()
+    threading.Timer(5, rm.stop_recording).start()
+    rm.start_recording()
