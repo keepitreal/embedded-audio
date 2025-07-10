@@ -3,6 +3,7 @@ import time
 import threading
 import alsaaudio
 import vosk
+import numpy as np
 
 class WakeWordDetector:
     """Wake word detection service using Vosk model"""
@@ -56,11 +57,11 @@ class WakeWordDetector:
     def _listen_loop(self):
         """Main listening loop - runs continuously"""
         try:
-            # Open audio device for capture in mono mode
+            # Open audio device for capture at native 48kHz stereo
             audio = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, alsaaudio.PCM_NONBLOCK,
-                                 channels=1, rate=16000, 
+                                 channels=2, rate=48000, 
                                  format=alsaaudio.PCM_FORMAT_S16_LE,
-                                 periodsize=160, device=self.device)
+                                 periodsize=1024, device=self.device)
             
             print("Wake word detection active...")
             
@@ -69,20 +70,24 @@ class WakeWordDetector:
                 length, data = audio.read()
                 
                 if length > 0 and self.rec:
-                    # Process audio through Vosk (already mono)
-                    if self.rec.AcceptWaveform(data):
-                        # Get recognition result
-                        result = json.loads(self.rec.Result())
-                        text = result.get('text', '').lower()
-                        
-                        if text:
-                            print(f"Heard: {text}")
+                    # Process 48kHz stereo audio to 16kHz mono for Vosk
+                    processed_data = self._process_audio_for_vosk(data)
+                    
+                    if processed_data:
+                        # Process audio through Vosk
+                        if self.rec.AcceptWaveform(processed_data):
+                            # Get recognition result
+                            result = json.loads(self.rec.Result())
+                            text = result.get('text', '').lower()
                             
-                            # Check for wake words
-                            if self._contains_wake_word(text):
-                                print(f"Wake word detected: {text}")
-                                if self.wake_word_callback:
-                                    self.wake_word_callback(text)
+                            if text:
+                                print(f"Heard: {text}")
+                                
+                                # Check for wake words
+                                if self._contains_wake_word(text):
+                                    print(f"Wake word detected: {text}")
+                                    if self.wake_word_callback:
+                                        self.wake_word_callback(text)
                 
                 time.sleep(0.01)  # Small delay to prevent busy waiting
         
@@ -93,6 +98,38 @@ class WakeWordDetector:
                 audio.close()
             except:
                 pass
+    
+    def _process_audio_for_vosk(self, raw_data):
+        """Process 48kHz stereo audio to 16kHz mono for Vosk"""
+        try:
+            # Convert raw bytes to numpy array (16-bit stereo)
+            stereo_data = np.frombuffer(raw_data, dtype=np.int16)
+            
+            if len(stereo_data) == 0:
+                return b''
+            
+            # Reshape to stereo (2 channels) 
+            if len(stereo_data) % 2 != 0:
+                # Odd number of samples, trim one
+                stereo_data = stereo_data[:-1]
+            
+            stereo_data = stereo_data.reshape(-1, 2)
+            
+            # Convert stereo to mono (average channels)
+            mono_data = np.mean(stereo_data, axis=1).astype(np.int16)
+            
+            # Resample from 48000 Hz to 16000 Hz (3:1 ratio)
+            # Simple decimation: take every 3rd sample
+            if len(mono_data) >= 3:
+                resampled_data = mono_data[::3]
+            else:
+                resampled_data = mono_data
+            
+            return resampled_data.tobytes()
+            
+        except Exception as e:
+            print(f"⚠️ Audio processing error: {e}")
+            return b''
     
     def _contains_wake_word(self, text):
         """Check if text contains any of the wake words"""
