@@ -3,7 +3,7 @@ import time
 import threading
 import alsaaudio
 import vosk
-import numpy as np
+import util
 
 class WakeWordDetector:
     """Wake word detection service using Vosk model"""
@@ -71,7 +71,7 @@ class WakeWordDetector:
                 
                 if length > 0 and self.rec:
                     # Convert stereo to mono
-                    mono_data = self._stereo_to_mono(data)
+                    mono_data = util.stereo_to_mono(data)
                     
                     # Process audio through Vosk
                     if self.rec.AcceptWaveform(mono_data):
@@ -97,13 +97,6 @@ class WakeWordDetector:
                 audio.close()
             except:
                 pass
-    
-    def _stereo_to_mono(self, stereo_data):
-        """Convert stereo 16-bit PCM audio to mono by taking left channel only"""
-        # Convert stereo bytes to numpy array of int16
-        stereo = np.frombuffer(stereo_data, dtype='<i2')  # little-endian int16
-        mono = stereo[::2]  # take left channel only
-        return mono.tobytes()
     
     def _contains_wake_word(self, text):
         """Check if text contains any of the wake words"""
