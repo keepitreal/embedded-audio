@@ -1,3 +1,4 @@
 vosk>=0.3.42
 requests>=2.25.0
-numpy>=1.21.0 
+numpy>=1.21.0
+faster-whisper>=0.10.0 
