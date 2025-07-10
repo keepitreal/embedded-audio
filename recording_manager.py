@@ -85,12 +85,19 @@ if __name__ == "__main__":
         stereo_data = stereo_file.readframes(-1)  # Read all frames
         mono_data = util.stereo_to_mono(stereo_data, bit_depth=32)  # Use 32-bit conversion
         
-        # Save mono version
+        # Convert mono back to stereo (duplicate channels) for better device compatibility
+        import numpy as np
+        mono_samples = np.frombuffer(mono_data, dtype='<i4')
+        fake_stereo = np.zeros((len(mono_samples), 2), dtype='<i4')
+        fake_stereo[:, 0] = mono_samples  # Left channel
+        fake_stereo[:, 1] = mono_samples  # Right channel (duplicate)
+        
+        # Save as stereo file with identical L/R channels
         with wave.open(mono_filepath, 'wb') as mono_file:
-            mono_file.setnchannels(1)  # Mono
+            mono_file.setnchannels(2)  # Stereo (but with identical channels)
             mono_file.setsampwidth(4)  # 32-bit (same as source)
             mono_file.setframerate(16000)
-            mono_file.writeframes(mono_data)
+            mono_file.writeframes(fake_stereo.tobytes())
     
     print(f"Mono version saved to: {mono_filepath}")
     

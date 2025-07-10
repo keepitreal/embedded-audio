@@ -21,13 +21,10 @@ def stereo_to_mono(stereo_data, bit_depth=32):
     elif bit_depth == 32:
         # Convert stereo bytes to numpy array of int32
         stereo = np.frombuffer(stereo_data, dtype='<i4')  # little-endian int32
-        print(f"Debug: Stereo data length: {len(stereo)} samples")
         # Reshape to [samples, 2] where each row is [left, right]
         stereo_pairs = stereo.reshape(-1, 2)
-        print(f"Debug: Stereo pairs shape: {stereo_pairs.shape}")
         # Average left and right channels
         mono = np.mean(stereo_pairs, axis=1, dtype=np.int32)
-        print(f"Debug: Mono data length: {len(mono)} samples")
         return mono.tobytes()
     else:
         raise ValueError(f"Unsupported bit depth: {bit_depth}")
