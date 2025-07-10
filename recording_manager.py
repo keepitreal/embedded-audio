@@ -35,8 +35,8 @@ class RecordingManager:
 
         # Open the device in non-blocking capture mode with a common sample rate
         inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, alsaaudio.PCM_NONBLOCK, 
-                           channels=2, rate=44100, format=alsaaudio.PCM_FORMAT_S16_LE, 
-                           periodsize=1024, device=self.device)
+                           channels=2, rate=16000, format=alsaaudio.PCM_FORMAT_S32_LE, 
+                           periodsize=160, device=self.device)
         
         # Check what rate the device actually set
         actual_rate = inp.setrate(44100)
