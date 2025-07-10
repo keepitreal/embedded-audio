@@ -83,12 +83,12 @@ if __name__ == "__main__":
     # Read the stereo file and convert to mono
     with wave.open(stereo_filepath, 'rb') as stereo_file:
         stereo_data = stereo_file.readframes(-1)  # Read all frames
-        mono_data = util.stereo_to_mono(stereo_data)
+        mono_data = util.stereo_to_mono(stereo_data, bit_depth=32)  # Use 32-bit conversion
         
         # Save mono version
         with wave.open(mono_filepath, 'wb') as mono_file:
             mono_file.setnchannels(1)  # Mono
-            mono_file.setsampwidth(2)  # 16-bit
+            mono_file.setsampwidth(4)  # 32-bit (same as source)
             mono_file.setframerate(16000)
             mono_file.writeframes(mono_data)
     

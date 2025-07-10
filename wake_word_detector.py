@@ -70,8 +70,8 @@ class WakeWordDetector:
                 length, data = audio.read()
                 
                 if length > 0 and self.rec:
-                    # Convert stereo to mono
-                    mono_data = util.stereo_to_mono(data)
+                    # Convert stereo to mono (wake word detector uses 16-bit)
+                    mono_data = util.stereo_to_mono(data, bit_depth=16)
                     
                     # Process audio through Vosk
                     if self.rec.AcceptWaveform(mono_data):
