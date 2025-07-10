@@ -3,7 +3,6 @@ import time
 import threading
 import alsaaudio
 import vosk
-import util
 
 class WakeWordDetector:
     """Wake word detection service using Vosk model"""
@@ -57,9 +56,9 @@ class WakeWordDetector:
     def _listen_loop(self):
         """Main listening loop - runs continuously"""
         try:
-            # Open audio device for capture (exactly match recording_manager settings)
+            # Open audio device for capture in mono mode
             audio = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, alsaaudio.PCM_NONBLOCK,
-                                 channels=2, rate=16000, 
+                                 channels=1, rate=16000, 
                                  format=alsaaudio.PCM_FORMAT_S16_LE,
                                  periodsize=160, device=self.device)
             
@@ -70,11 +69,8 @@ class WakeWordDetector:
                 length, data = audio.read()
                 
                 if length > 0 and self.rec:
-                    # Convert stereo to mono (wake word detector uses 16-bit)
-                    mono_data = util.stereo_to_mono(data, bit_depth=16)
-                    
-                    # Process audio through Vosk
-                    if self.rec.AcceptWaveform(mono_data):
+                    # Process audio through Vosk (already mono)
+                    if self.rec.AcceptWaveform(data):
                         # Get recognition result
                         result = json.loads(self.rec.Result())
                         text = result.get('text', '').lower()
