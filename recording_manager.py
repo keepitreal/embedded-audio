@@ -33,16 +33,20 @@ class RecordingManager:
 
         self.recording = True
 
-        # Configure the wave file
+        # Open the device in non-blocking capture mode with a common sample rate
+        inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, alsaaudio.PCM_NONBLOCK, 
+                           channels=2, rate=44100, format=alsaaudio.PCM_FORMAT_S16_LE, 
+                           periodsize=1024, device=self.device)
+        
+        # Check what rate the device actually set
+        actual_rate = inp.setrate(44100)
+        print(f"Requested 44100Hz, device set to: {actual_rate}Hz")
+
+        # Configure the wave file with the actual rate
         file = wave.open(filepath, 'wb')
         file.setnchannels(2)  # Stereo recording
         file.setsampwidth(2) # PCM_FORMAT_S16_LE (16-bit = 2 bytes)
-        file.setframerate(16000)
-
-        # Open the device in non-blocking capture mode
-        inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, alsaaudio.PCM_NONBLOCK, 
-                           channels=2, rate=16000, format=alsaaudio.PCM_FORMAT_S16_LE, 
-                           periodsize=160, device=self.device)
+        file.setframerate(actual_rate)  # Use actual rate, not requested rate
 
         while self.recording:
             # Read data from the device
